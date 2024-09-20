@@ -15,7 +15,7 @@ url = "https://pypi.nvidia.com"
 priority = "supplemental"
 
 [tool.poetry.dependencies]
-python = "^3.10.12"
+python = "^3.11.10"
 numpy = "^1.26.4,<2.0a0"
 pandas = "^2.2.2"
 cupy-cuda12x = "^13.3.0"
