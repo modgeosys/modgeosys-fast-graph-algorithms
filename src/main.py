@@ -4,8 +4,15 @@ import pickle
 import networkx as nx
 from pygments import highlight
 
-from modgeosys.graph.cuda.steiner import manhattan_distance, euclidean_distance, approximate_steiner_minimal_tree, is_gpu_available, construct_minimum_spanning_tree, plot_graph_with_highlighted_nodes, \
-    partition_nx_graph_by_reachability, create_nx_graph, GRAPH_NODE_COORDS, GRAPH_EDGES, GRAPH_TERMINALS
+from modgeosys.graph.steiner import manhattan_distance, \
+                                    euclidean_distance, \
+                                    approximate_steiner_minimal_tree, \
+                                    is_gpu_available, \
+                                    construct_minimum_spanning_tree, \
+                                    plot_graph_with_highlighted_nodes, \
+                                    partition_nx_graph_by_reachability, \
+                                    create_nx_graph, \
+                                    GRAPH_NODE_COORDS, GRAPH_EDGES, GRAPH_TERMINALS
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
