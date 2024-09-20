@@ -42,8 +42,8 @@ if __name__ == '__main__':
     #     (1, 3): 15
     # }
 
-    # Cable properties (example)
-    # cable_types = [
+    # Conduit properties (example)
+    # conduit_types = [
     #     {'capacity': 10, 'cost': 1},
     #     {'capacity': 20, 'cost': 1.8},
     #     {'capacity': 30, 'cost': 2.5}

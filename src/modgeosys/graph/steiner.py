@@ -1,14 +1,20 @@
-import cupy as cp
 import numpy as np
-import cudf
-import cugraph
 import networkx as nx
 import matplotlib.pyplot as plt
 import mpld3
 from mpld3 import plugins
 from concurrent.futures import ThreadPoolExecutor
 from scipy.sparse.csgraph import floyd_warshall as fw_cpu
-from cualgo.graph import floydwarshall as fw_gpu
+try:
+    import cupy as cp
+    import cudf
+    import cugraph
+    from cualgo.graph import floydwarshall as fw_gpu
+except ModuleNotFoundError:
+    cp = None
+    cudf = None
+    cugraph = None
+    fw_gpu = None
 
 
 GRAPH_NODE_COORDS = 'node_coords'
