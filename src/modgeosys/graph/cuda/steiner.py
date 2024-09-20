@@ -27,8 +27,6 @@ def is_gpu_available():
     except cp.cuda.runtime.CUDARuntimeError:
         return False
 
-use_gpu = False # is_gpu_available()
-
 
 def manhattan_distance(p1, p2, use_gpu):
     return cp.abs(p1[0] - p2[0]) + cp.abs(p1[1] - p2[1]) if use_gpu else np.abs(p1[0] - p2[0]) + np.abs(p1[1] - p2[1])

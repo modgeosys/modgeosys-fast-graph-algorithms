@@ -1,1 +1,1 @@
-# modgeosys-fast-graph-algorithms: CUDA GPU-accelerated Spatial Graph Algorithms
+# modgeosys-fast-graph-algorithms: Generic CPU-parallelization- and CUDA-GPU-acceleratable navigation algorithms
