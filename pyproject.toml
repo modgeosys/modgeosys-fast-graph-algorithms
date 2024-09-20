@@ -23,7 +23,7 @@ cudf-cu12 = {version = "^24.8.2", source = "nvidia-pypi"}
 cugraph-cu12 = {version = "^24.8.0", source = "nvidia-pypi"}
 networkx = "^3.3"
 scipy = "^1.14.1"
-#cualgo = "^0.2.0"
+cualgo = "^0.2.0"
 matplotlib = "^3.9.2"
 mpld3 = "^0.5.10"
 
