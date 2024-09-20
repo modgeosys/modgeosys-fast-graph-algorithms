@@ -1,0 +1,21 @@
+name: my_project
+channels:
+  - defaults
+  - rapidsai
+  - conda-forge
+  - nvidia
+dependencies:
+  - python=3.11
+  - numpy
+  - pandas
+  - cupy
+  - rapids=24.08
+  - cuda-version>=12.0,<=12.5
+  - cudf=24.08
+  - cugraph=24.08
+  - networkx
+  - scipy
+  - ruff
+  - pip
+  - pip:
+      - cualgo

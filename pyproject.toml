@@ -1,0 +1,36 @@
+[tool.poetry]
+name = "modgeosys-fast-graph-algorithms"
+version = "0.3.1"
+description = ""
+authors = ["Kevin Weller <klweller@icloud.com>"]
+readme = "README.md"
+packages = [
+    { include = "modgeosys", from = "src" },
+    { include = "tests", from = "." },
+]
+
+[[tool.poetry.source]]
+name = "nvidia-pypi"
+url = "https://pypi.nvidia.com"
+priority = "supplemental"
+
+[tool.poetry.dependencies]
+python = "^3.10.12"
+numpy = "^1.26.4,<2.0a0"
+pandas = "^2.2.2"
+cupy-cuda12x = "^13.3.0"
+cudf-cu12 = {version = "^24.8.2", source = "nvidia-pypi"}
+cugraph-cu12 = {version = "^24.8.0", source = "nvidia-pypi"}
+networkx = "^3.3"
+scipy = "^1.14.1"
+#cualgo = "^0.2.0"
+matplotlib = "^3.9.2"
+mpld3 = "^0.5.10"
+
+[tool.poetry.dev-dependencies]
+pytest = "^8.3.3"
+ruff = "^0.6.4"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
