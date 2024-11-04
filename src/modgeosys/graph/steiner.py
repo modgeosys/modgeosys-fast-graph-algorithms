@@ -2,6 +2,7 @@ import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
 import mpld3
+from cupyx.scipy.signal import ellip
 from mpld3 import plugins
 from concurrent.futures import ThreadPoolExecutor
 from scipy.sparse.csgraph import floyd_warshall as fw_cpu
@@ -180,7 +181,8 @@ def approximate_steiner_minimal_tree(graph, distance_func, use_gpu, mst_algorith
             steiner_tree.add_edge(u, v, weight=original_graph[u][v][0]['weight'], num_conduits=num_conduits, total_cost=total_cost)
 
     with ThreadPoolExecutor() as executor:
-        futures = [executor.submit(add_shortest_path, u, v) for u, v in mst.edges()]
+        edges = mst.edges() if isinstance(mst, nx.Graph) else [tuple(x) for x in mst.edges().iloc[:, [0, 1]].to_records(index=False)]
+        futures = [executor.submit(add_shortest_path, u, v) for u, v in edges]
         for future in futures:
             future.result()
 

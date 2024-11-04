@@ -14,6 +14,46 @@ from modgeosys.graph.steiner import manhattan_distance, \
                                     create_nx_graph, \
                                     GRAPH_NODE_COORDS, GRAPH_EDGES, GRAPH_TERMINALS
 
+
+def edges_and_nodes(graph, tree):
+    if isinstance(tree, nx.Graph):
+        edges = tree.edges(data=True)
+        nodes = tree.nodes
+    else:
+        edges = tree.view_edge_list()
+        nodes = tree.nodes().values_host
+    return edges, nodes
+
+
+def demo_steiner(use_gpu):
+    print('Terminal nodes in original graph: ', len(graph[GRAPH_TERMINALS]))
+    nx_graph = create_nx_graph(graph[GRAPH_EDGES], graph[GRAPH_NODE_COORDS])
+    # reachable_nodes, unreachable_nodes = partition_nx_graph_by_reachability(nx_graph)
+    regular_nodes = [node for node in nx_graph.nodes if node not in graph[GRAPH_TERMINALS]]
+    highlighted_nodes = graph[GRAPH_TERMINALS]
+    # plot_graph_with_highlighted_nodes(nx_graph, regular_nodes, highlighted_nodes)
+    # exit(0)
+    minimum_spanning_tree, _, _, _, terminals, _, _, _ = construct_minimum_spanning_tree(graph, distance_function, use_gpu)
+    edges, nodes = edges_and_nodes(graph, minimum_spanning_tree)
+    print('Minimum spanning tree (Manhattan distance): ', edges)
+    print('Edges in minimum spanning tree (Manhattan distance): ', len(edges))
+    print('Terminal nodes in minimum spanning tree: ', len(terminals))
+    # reachable_nodes, unreachable_nodes = partition_nx_graph_by_reachability(minimum_spanning_tree, terminals[0])
+    regular_nodes = [node for node in nodes if node not in terminals]
+    highlighted_nodes = terminals
+    # plot_graph_with_highlighted_nodes(minimum_spanning_tree, regular_nodes, highlighted_nodes)
+    # exit(0)
+    steiner_minimal_tree, _, _, _, terminals, _, _, _ = approximate_steiner_minimal_tree(graph, distance_function, use_gpu)
+    edges, nodes = edges_and_nodes(graph, steiner_minimal_tree)
+    print('Steiner minimal tree: ', edges)
+    print('Edges in Steiner minimal tree: ', len(edges))
+    print('Terminal nodes in Steiner minimal tree: ', len(terminals))
+    # reachable_nodes, unreachable_nodes = partition_nx_graph_by_reachability(steiner_minimal_tree, terminals[0])
+    regular_nodes = [node for node in nodes if node not in terminals]
+    highlighted_nodes = terminals
+    # plot_graph_with_highlighted_nodes(steiner_minimal_tree, regular_nodes, highlighted_nodes)
+
+
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     # Example usage
@@ -52,35 +92,7 @@ if __name__ == '__main__':
     with open('/home/kweller/graph.pickle', 'rb') as pickled_sample_larger_graph_file:
         graph = pickle.load(pickled_sample_larger_graph_file)
 
-    use_gpu = False # is_gpu_available()
     distance_function = manhattan_distance
 
-    print('Terminal nodes in original graph: ', len(graph[GRAPH_TERMINALS]))
-
-    nx_graph = create_nx_graph(graph[GRAPH_EDGES], graph[GRAPH_NODE_COORDS])
-    # reachable_nodes, unreachable_nodes = partition_nx_graph_by_reachability(nx_graph)
-    regular_nodes = [node for node in nx_graph.nodes if node not in graph[GRAPH_TERMINALS]]
-    highlighted_nodes = graph[GRAPH_TERMINALS]
-    # plot_graph_with_highlighted_nodes(nx_graph, regular_nodes, highlighted_nodes)
-    # exit(0)
-
-    minimum_spanning_tree, _, _, _, terminals, _, _, _ = construct_minimum_spanning_tree(graph, distance_function, use_gpu)
-    print('Minimum spanning tree (Manhattan distance): ', minimum_spanning_tree.edges(data=True))
-    print('Edges in minimum spanning tree (Manhattan distance): ', len(minimum_spanning_tree.edges(data=True)))
-    print('Terminal nodes in minimum spanning tree: ', len(terminals))
-    # reachable_nodes, unreachable_nodes = partition_nx_graph_by_reachability(minimum_spanning_tree, terminals[0])
-    regular_nodes = [node for node in minimum_spanning_tree.nodes if node not in terminals]
-    highlighted_nodes = terminals
-    # plot_graph_with_highlighted_nodes(minimum_spanning_tree, regular_nodes, highlighted_nodes)
-    # exit(0)
-
-    steiner_minimal_tree, _, _, _, terminals, _, _, _ = approximate_steiner_minimal_tree(graph, distance_function, use_gpu)
-
-    print('Steiner minimal tree: ', steiner_minimal_tree.edges(data=True))
-    print('Edges in Steiner minimal tree: ', len(steiner_minimal_tree.edges(data=True)))
-    print('Terminal nodes in Steiner minimal tree: ', len(terminals))
-
-    # reachable_nodes, unreachable_nodes = partition_nx_graph_by_reachability(steiner_minimal_tree, terminals[0])
-    regular_nodes = [node for node in steiner_minimal_tree.nodes if node not in terminals]
-    highlighted_nodes = terminals
-    plot_graph_with_highlighted_nodes(steiner_minimal_tree, regular_nodes, highlighted_nodes)
+    demo_steiner(False)
+    demo_steiner(is_gpu_available())
