@@ -25,7 +25,8 @@ networkx = "^3.3"
 scipy = "^1.14.1"
 cualgo = "^0.2.0"
 matplotlib = "^3.9.2"
-mpld3 = "^0.5.10"
+#mpld3 = "^0.5.10"
+mpld3 = { path = "../mpld3", develop = true }
 
 [tool.poetry.dev-dependencies]
 pytest = "^8.3.3"

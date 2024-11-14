@@ -2,7 +2,6 @@ import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
 import mpld3
-from cupyx.scipy.signal import ellip
 from mpld3 import plugins
 from concurrent.futures import ThreadPoolExecutor
 from scipy.sparse.csgraph import floyd_warshall as fw_cpu
@@ -80,39 +79,16 @@ def compute_metric_closure_with_steiner(nodes, edges, required_flow_rates, condu
 
     if use_gpu:
 
-        for i in range(n):
-            for j in range(i + 1, n):
-                if dist_matrix[i, j] < (cp.inf if use_gpu else np.inf):
-                    sources.append(i)
-                    targets.append(j)
-                    weights.append(dist_matrix[i, j])
-
-        df = cudf.DataFrame({'src': sources, 'dst': targets, 'weight': weights})
-        G = cugraph.Graph()
-        G.from_cudf_edgelist(df, source='src', destination='dst', edge_attr='weight')
-
-        # Convert G to a Python list of lists
-        df_pandas = df.to_pandas()
-        num_nodes = max(df_pandas['src'].max(), df_pandas['dst'].max()) + 1
-        adj_matrix = np.zeros((num_nodes, num_nodes))
-
-        for _, row in df_pandas.iterrows():
-            adj_matrix[int(row['src']), int(row['dst'])] = row['weight']
-            adj_matrix[int(row['dst']), int(row['src'])] = row['weight']  # Assuming undirected graph
+        print('GPU adjacency matrix:', dist_matrix)
 
         # Convert adjacency matrix to list of lists, then the resulting distance matrix to a CuPy array.
-        return cp.asarray(fw_gpu(adj_matrix.tolist()))
+        return cp.asarray(fw_gpu(dist_matrix.tolist())), cp.asnumpy(dist_matrix)
 
     else:
 
-        dist_matrix_cpu = np.zeros((n, n), dtype=np.float64)
+        print('CPU distance matrix:', dist_matrix)
 
-        for i in range(n):
-            for j in range(i + 1, n):
-                dist_matrix_cpu[i, j] = dist_matrix[i, j]
-                dist_matrix_cpu[j, i] = dist_matrix[i, j]
-
-        return fw_cpu(dist_matrix_cpu, directed=False)
+        return fw_cpu(dist_matrix, directed=False), dist_matrix
 
 
 def construct_minimum_spanning_tree_on_terminals(terminals, node_coords, metric_closure, use_gpu, mst_algorithm='boruvka'):
@@ -157,7 +133,7 @@ def shortest_path(graph, source, target, weight='weight'):
 
 def approximate_steiner_minimal_tree(graph, distance_func, use_gpu, mst_algorithm='boruvka'):
 
-    mst, nodes, node_coords, node_ids, terminals, edges, required_flow_rates, conduit_types = construct_minimum_spanning_tree(graph, distance_func, use_gpu, mst_algorithm)
+    mst, nodes, node_coords, node_ids, terminals, edges, required_flow_rates, conduit_types, metric_closure, adj_matrix = construct_minimum_spanning_tree(graph, distance_func, use_gpu, mst_algorithm)
 
     # Step 3: Steiner node addition
     original_graph = nx.MultiGraph()
@@ -186,7 +162,7 @@ def approximate_steiner_minimal_tree(graph, distance_func, use_gpu, mst_algorith
         for future in futures:
             future.result()
 
-    return steiner_tree, nodes, node_coords, node_ids, terminals, edges, required_flow_rates, conduit_types
+    return steiner_tree, mst, nodes, node_coords, node_ids, terminals, edges, required_flow_rates, conduit_types, metric_closure, adj_matrix
 
 
 def construct_minimum_spanning_tree(graph, distance_func, use_gpu, mst_algorithm='boruvka'):
@@ -199,15 +175,15 @@ def construct_minimum_spanning_tree(graph, distance_func, use_gpu, mst_algorithm
         nodes = np.array(node_coords, dtype=np.float64)
 
     # Step 1: Compute metric closure using the specified distance function
-    metric_closure = compute_metric_closure_with_steiner(nodes, edges, required_flow_rates, conduit_types, distance_func, use_gpu)
+    metric_closure, adj_matrix = compute_metric_closure_with_steiner(nodes, edges, required_flow_rates, conduit_types, distance_func, use_gpu)
 
     # Step 2: Construct MST from the metric closure
     mst = construct_minimum_spanning_tree_on_terminals(terminals, node_coords, metric_closure, use_gpu, mst_algorithm)
 
-    return mst, nodes, node_coords, node_ids, terminals, edges, required_flow_rates, conduit_types
+    return mst, nodes, node_coords, node_ids, terminals, edges, required_flow_rates, conduit_types, metric_closure, adj_matrix
 
 
-def plot_graph_with_highlighted_nodes(G, regular_nodes, highlighted_nodes, width=15, height=12):
+def plot_graph_with_highlighted_nodes(G, regular_nodes, highlighted_nodes, title, width=15, height=12):
     # Set the figure size
     fig, ax = plt.subplots(figsize=(width, height))
 
@@ -236,7 +212,7 @@ def plot_graph_with_highlighted_nodes(G, regular_nodes, highlighted_nodes, width
     edge_tooltips = plugins.LineHTMLTooltip(edges_draw, [edge_labels[e] for e in G.edges()])
     plugins.connect(fig, edge_tooltips)
 
-    plt.title("Graph with Highlighted Nodes", fontsize=12, pad=20)
+    plt.title(f"{title} Graph with Highlighted Nodes", fontsize=12, pad=20)
     mpld3.show()
 
 
